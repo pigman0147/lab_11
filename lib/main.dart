@@ -11,16 +11,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await dotenv.load();
+  print("Initializing dotenv...");
+  await dotenv.load(fileName: "assets/.env");
+  print("Dotenv loaded: ${dotenv.env}");
+   
+  await dotenv.load(); // โหลดค่า .env
 
   final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
   final supabaseKey = dotenv.env['SUPABASE_KEY'] ?? '';
 
-  // Initialize Supabase
-  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
+  print("supabaseUrl: $supabaseUrl");
+  print("supabaseKey: ${supabaseKey.isNotEmpty ? 'Loaded' : 'Empty'}");
 
-  // Initialize Firebase
+  // ✅ ตั้งค่า Supabase
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
@@ -39,13 +43,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'World Food List',
+      title: 'World Food list',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 21, 209, 234),
         ),
       ),
-      home: LoginPage(),
+     home: LoginPage(), // ไม่ต้องใช้ Consumer หรือ Provider
     );
   }
 }
