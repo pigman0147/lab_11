@@ -62,20 +62,20 @@ class _AddReviewPageState extends State<AddReviewPage> {
         : path.extension(_image!.path); // ✅ ใช้นามสกุลไฟล์ต้นฉบับ
 
     final fileName =
-        'reviews/${DateTime.now().millisecondsSinceEpoch}$extension';
+        'image/${DateTime.now().millisecondsSinceEpoch}$extension';
 
     try {
       if (kIsWeb) {
         await supabase.storage
-            .from('review-images')
+            .from('review-image')
             .uploadBinary(fileName, _webImageBytes!);
       } else {
         final bytes = await _image!.readAsBytes();
         await supabase.storage
-            .from('review-images')
+            .from('review-image')
             .uploadBinary(fileName, bytes);
       }
-      return supabase.storage.from('review-images').getPublicUrl(fileName);
+      return supabase.storage.from('review-image').getPublicUrl(fileName);
     } catch (e) {
       if (!mounted) return null;
       print(e);
@@ -97,9 +97,9 @@ class _AddReviewPageState extends State<AddReviewPage> {
       }
 
       try {
-        await FirebaseFirestore.instance.collection('reviews').add({
-          'cafe_name': _nameController.text,
-          'description': _descriptionController.text,
+        await FirebaseFirestore.instance.collection('food_id').add({
+          'food_name': _nameController.text,
+          'food_description': _descriptionController.text,
           'image_url': imageUrl,
           'user_id': FirebaseAuth.instance.currentUser!.uid,
           'timestamp': Timestamp.now(),
@@ -133,12 +133,12 @@ class _AddReviewPageState extends State<AddReviewPage> {
               TextFormField(
                 validator: (value) {
                   if (value!.trim().isEmpty) {
-                    return "Please input Cafe name";
+                    return "Please input food name";
                   }
                   return null;
                 },
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Cafe Name'),
+                decoration: InputDecoration(labelText: 'Food Name'),
               ),
               TextFormField(
                 validator: (value) {

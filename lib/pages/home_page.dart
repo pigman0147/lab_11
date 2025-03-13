@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:lab_11/pages/add_review_page.dart';
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cafe Reviews'),
+        title: const Text('Food Reviews'),
         actions: [
           IconButton(
             onPressed: () async {
@@ -25,44 +26,55 @@ class _HomePageState extends State<HomePage> {
                 context,
                 listen: false,
               );
-
               await authProvider.signOut();
-
               if (context.mounted) {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               }
             },
-            icon: Icon(Icons.logout, color: Colors.red),
+            icon: const Icon(Icons.logout, color: Colors.red),
           ),
         ],
       ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('reviews').snapshots(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('food_id').snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return CircularProgressIndicator();
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('ไม่มีรีวิว'));
+          }
 
           final reviews = snapshot.data!.docs;
 
           return ListView.builder(
             itemCount: reviews.length,
             itemBuilder: (context, index) {
-              Map<String, dynamic> data = reviews[index].data();
-              return ListTile(
-                title: Text(data['cafe_name']),
-                subtitle: Text(data['description']),
-                leading: Image.network(
-                  data['image_url'],
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
+              final data = reviews[index].data() as Map<String, dynamic>;
+              final imageUrl = data['image_url'];
+              final foodName = data['food_name'] ?? 'ไม่มีชื่อคาเฟ่';
+              final foodDescription = data['food_description'] ?? 'ไม่มีคำอธิบาย';
+
+              return Card(
+                margin: const EdgeInsets.all(8),
+                child: ListTile(
+                  leading: CachedNetworkImage(
+                    imageUrl: imageUrl,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  ),
+                  title: Text(foodName),
+                  subtitle: Text(foodDescription),
                 ),
-                onTap: () {
-                  print(reviews[index].id);
-                  // Navigator.push(context, MaterialPageRoute(builder: (context) => ReviewDetailPage(reviewId: reviews[index].id),));
-                },
               );
             },
           );
@@ -72,10 +84,10 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddReviewPage()),
+            MaterialPageRoute(builder: (context) => const AddReviewPage()),
           );
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
