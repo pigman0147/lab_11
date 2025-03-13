@@ -11,15 +11,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(); // โหลดค่า .env
+  // Load environment variables
+  await dotenv.load();
 
   final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
   final supabaseKey = dotenv.env['SUPABASE_KEY'] ?? '';
 
-  // ✅ ตั้งค่า Supabase
+  // Initialize Supabase
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
 
+  // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => MyAuthProvider())],
@@ -36,17 +39,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Cafe Review',
+      title: 'World Food List',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 21, 209, 234),
         ),
       ),
-      home: Consumer<MyAuthProvider>(
-        builder: (context, auth, _) {
-          return auth.user == null ? LoginPage() : HomePage();
-        },
-      ),
+      home: LoginPage(),
     );
   }
 }
