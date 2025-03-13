@@ -5,6 +5,7 @@ import 'package:lab_11/pages/add_review_page.dart';
 import 'package:lab_11/pages/login_page.dart';
 import 'package:lab_11/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:lab_11/pages/edit_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,7 +60,8 @@ class _HomePageState extends State<HomePage> {
               final data = reviews[index].data() as Map<String, dynamic>;
               final imageUrl = data['image_url'];
               final foodName = data['food_name'] ?? 'ไม่มีชื่อคาเฟ่';
-              final foodDescription = data['food_description'] ?? 'ไม่มีคำอธิบาย';
+              final foodDescription =
+                  data['food_description'] ?? 'ไม่มีคำอธิบาย';
 
               return Card(
                 margin: const EdgeInsets.all(8),
@@ -69,11 +71,21 @@ class _HomePageState extends State<HomePage> {
                     width: 60,
                     height: 60,
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const CircularProgressIndicator(),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
                   ),
                   title: Text(foodName),
                   subtitle: Text(foodDescription),
+                  onTap: () {
+                    // เพิ่มการทำงานเมื่อกดที่นี่ เช่น เปิดหน้ารายละเอียด
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EditPage(documentId: reviews[index].id)
+                      ),
+                    );
+                  },
                 ),
               );
             },
