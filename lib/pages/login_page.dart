@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lab_11/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lab_11/pages/home_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,9 +43,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(error)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
       }
     }
   }
@@ -72,6 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: InputDecoration(labelText: 'Username'),
                   keyboardType: TextInputType.emailAddress,
                 ),
+                SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   validator: (value) {
@@ -99,6 +99,36 @@ class _LoginPageState extends State<LoginPage> {
                     _isLogin
                         ? "Create an account"
                         : "Already have an account? Login",
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton.icon(
+                  icon: SvgPicture.asset(
+                    'assets/google_icon.svg',
+                    height: 24,
+                  ),
+                  label: Text('Sign in with Google'),
+                  onPressed: () async {
+                    final error = await Provider.of<MyAuthProvider>(
+                      context, 
+                      listen: false,
+                    ).signInWithGoogle();
+                    
+                    if (error == null) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => HomePage()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(error)),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ],

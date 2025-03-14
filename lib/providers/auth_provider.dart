@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
 
 class MyAuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -44,5 +46,25 @@ class MyAuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     await _auth.signOut();
     notifyListeners();
+  }
+
+Future<String?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return 'User cancelled login';
+      
+      final GoogleSignInAuthentication googleAuth = 
+          await googleUser.authentication;
+      
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      return null;
+    } catch (e) {
+      return 'Google sign in failed: $e';
+    }
   }
 }

@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:typed_data';
+import 'package:uuid/uuid.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class EditPage extends StatefulWidget {
   final String documentId;
@@ -75,7 +77,7 @@ class _EditPageState extends State<EditPage> {
       final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         Uint8List bytes = await pickedFile.readAsBytes();
-        final fileName = pickedFile.name;
+        final fileName = '${Uuid().v4()}_${pickedFile.name}'; // ใช้ UUID เพื่อให้ชื่อไฟล์ไม่ซ้ำกัน
         await _supabase.storage.from('review-image').uploadBinary(fileName, bytes);
         final publicUrl = _supabase.storage.from('review-image').getPublicUrl(fileName);
         setState(() {
@@ -86,6 +88,22 @@ class _EditPageState extends State<EditPage> {
     } catch (e) {
       print("Error picking image: $e");
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to pick image: $e")));
+    }
+  }
+
+  Future<void> _deleteImage() async {
+    try {
+      if (_imageUrl != null) {
+        final fileName = _imageUrl!.split('/').last;
+        await _supabase.storage.from('review-image').remove([fileName]);
+        setState(() {
+          _imageUrl = null;
+          _imageBytes = null;
+        });
+      }
+    } catch (e) {
+      print("Error deleting image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to delete image: $e")));
     }
   }
 
@@ -125,13 +143,27 @@ class _EditPageState extends State<EditPage> {
                       },
                     ),
                     SizedBox(height: 20),
-                    _imageUrl != null
-                        ? CachedNetworkImage(
-                            imageUrl: _imageUrl!,
-                            placeholder: (context, url) => CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
-                          )
-                        : Text('No image selected'),
+                    Center(
+                      child: _imageUrl != null
+                          ? Column(
+                              children: [
+                                SizedBox(
+                                  width: 150,
+                                  height: 150,
+                                  child: CachedNetworkImage(
+                                    imageUrl: _imageUrl!,
+                                    placeholder: (context, url) => CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) => Icon(Icons.error),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: _deleteImage,
+                                  child: Text('Delete Image'),
+                                ),
+                              ],
+                            )
+                          : Text('No image selected'),
+                    ),
                     ElevatedButton(
                       onPressed: _pickImage,
                       child: Text('Pick Image'),
