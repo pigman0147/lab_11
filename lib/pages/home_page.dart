@@ -6,6 +6,8 @@ import 'package:lab_11/pages/login_page.dart';
 import 'package:lab_11/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:lab_11/pages/edit_page.dart';
+import 'package:lab_11/pages/detail_page.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,7 +24,15 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('World Food List'),
+        leading: IconButton(
+          icon: const Icon(Icons.account_circle),
+          onPressed: () {
+            // เพิ่มการทำงานเมื่อกดที่นี่ เช่น เปิดหน้าโปรไฟล์
+          },
+        ),
+        title: const Center(
+          child: Text('World Food List'),
+        ),
         actions: [
           IconButton(
             onPressed: () async {
@@ -92,24 +102,50 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       ListTile(
-                        title: Text(foodName),
-                        subtitle: Text(foodDescription),
+                        title: AutoSizeText(
+                          foodName,
+                          style: TextStyle(fontSize: 18),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: AutoSizeText(
+                          foodDescription,
+                          style: TextStyle(fontSize: 14),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    EditPage(documentId: reviews[index].id)),
+                                    DetailPage(documentId: reviews[index].id)),
                           );
                         },
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            await FirebaseFirestore.instance
-                                .collection('food_id')
-                                .doc(reviews[index].id)
-                                .delete();
-                          },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => EditPage(
+                                          documentId: reviews[index].id)),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                await FirebaseFirestore.instance
+                                    .collection('food_id')
+                                    .doc(reviews[index].id)
+                                    .delete();
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     ],
